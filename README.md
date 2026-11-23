@@ -1,4 +1,4 @@
-Banking Campaign Response Prediction
+# CampaignPilot - Banking Campaign Response Prediction
 
 Live API: https://bankcampaign.onrender.com
 API Docs: https://bankcampaign.onrender.com/docs

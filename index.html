@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampaignPilot - Campaign Response Predictor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header with Title and Live Clock -->
+        <header class="app-header">
+            <div>
+                <h1>CampaignPilot</h1>
+                <p class="subtitle">Banking Term Deposit Campaign Predictor</p>
+            </div>
+            <div class="header-status">
+                <span id="clockP" class="clock-badge">--:--:--</span>
+                <span id="networkStatus" class="network-badge online">Online</span>
+            </div>
+        </header>
+
+        <!-- API Settings & Model Overview -->
+        <section class="card settings-card">
+            <div class="settings-row">
+                <div class="api-selector">
+                    <label for="apiUrlSelect">API Endpoint:</label>
+                    <select id="apiUrlSelect">
+                        <option value="http://127.0.0.1:8000">Local (http://127.0.0.1:8000)</option>
+                        <option value="https://bankcampaign.onrender.com">Cloud (bankcampaign.onrender.com)</option>
+                        <option value="custom">Custom URL...</option>
+                    </select>
+                    <input type="text" id="customApiInput" class="hidden" placeholder="http://localhost:8000">
+                </div>
+                <div class="header-actions">
+                    <button id="loadMetricsBtn" type="button" class="btn btn-secondary">Fetch Model Metrics</button>
+                    <button id="quickTestBtn" type="button" class="btn btn-secondary">Check API Health</button>
+                </div>
+            </div>
+            <div id="metricsPanel" class="metrics-panel hidden">
+                <!-- Dynamically populated via JS using createElement -->
+            </div>
+        </section>
+
+        <!-- Quick Load Presets (Demonstrating event handling & dataset) -->
+        <section class="card presets-card">
+            <span class="card-title">Quick Test Presets:</span>
+            <div id="presetButtonsContainer" class="button-group">
+                <button type="button" class="btn preset-btn" data-preset="sample-standard">Standard Tech Lead</button>
+                <button type="button" class="btn preset-btn" data-preset="sample-high">High Propensity Client</button>
+                <button type="button" class="btn preset-btn" data-preset="sample-low">Low Propensity Client</button>
+            </div>
+        </section>
+
+        <!-- Main Form & Prediction Output Grid -->
+        <main class="main-grid">
+            <!-- Prediction Form -->
+            <section class="card form-card">
+                <form id="predictionForm">
+                    <h2 class="section-heading">Customer & Campaign Profile</h2>
+
+                    <!-- Personal Information Group -->
+                    <fieldset class="form-group">
+                        <legend>1. Customer Demographics</legend>
+                        <div class="grid-2">
+                            <label>
+                                Age:
+                                <input type="number" id="age" name="age" min="17" max="100" value="35" required>
+                            </label>
+                            <label>
+                                Job:
+                                <select id="job" name="job" required>
+                                    <option value="technician" selected>technician</option>
+                                    <option value="admin.">admin.</option>
+                                    <option value="blue-collar">blue-collar</option>
+                                    <option value="entrepreneur">entrepreneur</option>
+                                    <option value="housemaid">housemaid</option>
+                                    <option value="management">management</option>
+                                    <option value="retired">retired</option>
+                                    <option value="self-employed">self-employed</option>
+                                    <option value="services">services</option>
+                                    <option value="student">student</option>
+                                    <option value="unemployed">unemployed</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="grid-2">
+                            <label>
+                                Marital Status:
+                                <select id="marital" name="marital" required>
+                                    <option value="married" selected>married</option>
+                                    <option value="single">single</option>
+                                    <option value="divorced">divorced</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                            <label>
+                                Education:
+                                <select id="education" name="education" required>
+                                    <option value="university.degree" selected>university.degree</option>
+                                    <option value="high.school">high.school</option>
+                                    <option value="basic.9y">basic.9y</option>
+                                    <option value="basic.6y">basic.6y</option>
+                                    <option value="basic.4y">basic.4y</option>
+                                    <option value="professional.course">professional.course</option>
+                                    <option value="illiterate">illiterate</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="grid-3">
+                            <label>
+                                Credit Default?
+                                <select id="default" name="default" required>
+                                    <option value="no" selected>no</option>
+                                    <option value="yes">yes</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                            <label>
+                                Housing Loan?
+                                <select id="housing" name="housing" required>
+                                    <option value="yes" selected>yes</option>
+                                    <option value="no">no</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                            <label>
+                                Personal Loan?
+                                <select id="loan" name="loan" required>
+                                    <option value="no" selected>no</option>
+                                    <option value="yes">yes</option>
+                                    <option value="unknown">unknown</option>
+                                </select>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Campaign Information Group -->
+                    <fieldset class="form-group">
+                        <legend>2. Current & Previous Campaign</legend>
+                        <div class="grid-3">
+                            <label>
+                                Contact Channel:
+                                <select id="contact" name="contact" required>
+                                    <option value="cellular" selected>cellular</option>
+                                    <option value="telephone">telephone</option>
+                                </select>
+                            </label>
+                            <label>
+                                Contact Month:
+                                <select id="month" name="month" required>
+                                    <option value="may" selected>may</option>
+                                    <option value="jun">jun</option>
+                                    <option value="jul">jul</option>
+                                    <option value="aug">aug</option>
+                                    <option value="sep">sep</option>
+                                    <option value="oct">oct</option>
+                                    <option value="nov">nov</option>
+                                    <option value="dec">dec</option>
+                                    <option value="mar">mar</option>
+                                    <option value="apr">apr</option>
+                                </select>
+                            </label>
+                            <label>
+                                Day of Week:
+                                <select id="day_of_week" name="day_of_week" required>
+                                    <option value="mon" selected>mon</option>
+                                    <option value="tue">tue</option>
+                                    <option value="wed">wed</option>
+                                    <option value="thu">thu</option>
+                                    <option value="fri">fri</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="grid-3">
+                            <label>
+                                Campaign Contacts:
+                                <input type="number" id="campaign" name="campaign" min="1" max="60" value="2" required>
+                            </label>
+                            <label>
+                                Pdays (999 = never):
+                                <input type="number" id="pdays" name="pdays" min="0" max="999" value="999" required>
+                            </label>
+                            <label>
+                                Previous Contacts:
+                                <input type="number" id="previous" name="previous" min="0" max="10" value="0" required>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label>
+                                Previous Campaign Outcome:
+                                <select id="poutcome" name="poutcome" required>
+                                    <option value="nonexistent" selected>nonexistent</option>
+                                    <option value="failure">failure</option>
+                                    <option value="success">success</option>
+                                </select>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Economic Indicators Group -->
+                    <fieldset class="form-group">
+                        <legend>3. Socio-Economic Context</legend>
+                        <div class="grid-3">
+                            <label>
+                                Emp. Var. Rate:
+                                <input type="number" step="0.1" id="emp_var_rate" name="emp.var.rate" value="1.1" required>
+                            </label>
+                            <label>
+                                Cons. Price Index:
+                                <input type="number" step="0.001" id="cons_price_idx" name="cons.price.idx" value="93.994" required>
+                            </label>
+                            <label>
+                                Cons. Conf. Index:
+                                <input type="number" step="0.1" id="cons_conf_idx" name="cons.conf.idx" value="-36.4" required>
+                            </label>
+                        </div>
+                        <div class="grid-2">
+                            <label>
+                                Euribor 3 Month:
+                                <input type="number" step="0.001" id="euribor3m" name="euribor3m" value="4.857" required>
+                            </label>
+                            <label>
+                                Number of Employees:
+                                <input type="number" step="0.1" id="nr_employed" name="nr_employed" value="5191.0" required>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button id="predictBtn" type="submit" class="btn btn-primary">
+                            <span>Predict Subscription</span>
+                        </button>
+                        <button id="clearBtn" type="button" class="btn btn-outline">Reset Form (Esc)</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Results & History Column -->
+            <section class="results-column">
+                <!-- Live Status & Prediction Result Card -->
+                <div class="card result-card">
+                    <h2 class="section-heading">Prediction Outcome</h2>
+                    <p id="statusP" class="status-message">Ready to predict. Press <strong>Predict</strong> or hit <strong>P</strong>.</p>
+                    
+                    <div id="outcomeBox" class="outcome-box hidden">
+                        <div class="outcome-badge-container">
+                            <span id="predictionBadge" class="outcome-badge">--</span>
+                        </div>
+                        <div class="probability-container">
+                            <div class="prob-header">
+                                <span>Subscription Probability:</span>
+                                <span id="probabilityText" class="prob-val">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="probabilityBar" class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <p id="recommendationText" class="recommendation-text"></p>
+                    </div>
+                </div>
+
+                <!-- Prediction History (demonstrating localStorage & event delegation) -->
+                <div class="card history-card">
+                    <div class="history-header">
+                        <h2 class="section-heading">Recent Predictions</h2>
+                        <button id="clearHistoryBtn" type="button" class="btn btn-sm btn-outline">Clear History</button>
+                    </div>
+                    <p id="emptyHistoryMsg" class="empty-note">No recent predictions in local storage.</p>
+                    <ul id="historyList" class="history-list">
+                        <!-- Items dynamically appended here -->
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer with Shortcut Hints -->
+        <footer class="app-footer">
+            <p>
+                <strong>Shortcuts:</strong> Press <kbd>P</kbd> to predict &bull; <kbd>Esc</kbd> to reset &bull; <kbd>M</kbd> to fetch metrics.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>

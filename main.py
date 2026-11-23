@@ -1,5 +1,7 @@
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 import pandas as pd
 import joblib
@@ -9,7 +11,15 @@ from pathlib import Path
 # 1. Create FastAPI application
 # --------------------------------
 
-app = FastAPI(title="BankReach AI")
+app = FastAPI(title="CampaignPilot")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # --------------------------------
@@ -68,15 +78,27 @@ class StrategyComparisonRequest(BaseModel):
     max_calls: int = Field(gt=0)
 
 # --------------------------------
-# 5. Home endpoint
+# 5. Home endpoint & Frontend
 # --------------------------------
 
 @app.get("/")
 def home():
 
     return {
-        "message": "Welcome to BankReach AI"
+        "message": "Welcome to CampaignPilot"
     }
+
+@app.get("/app")
+def serve_frontend():
+    return FileResponse(BASE_DIR / "index.html")
+
+@app.get("/style.css")
+def serve_css():
+    return FileResponse(BASE_DIR / "style.css", media_type="text/css")
+
+@app.get("/script.js")
+def serve_js():
+    return FileResponse(BASE_DIR / "script.js", media_type="application/javascript")
 
 
 # --------------------------------
@@ -185,7 +207,7 @@ def prioritize_customers(batch: CustomerBatch):
 def model_info():
 
     return {
-        "project_name": "BankReach AI",
+        "project_name": "CampaignPilot",
         "model_name": artifact.get("model_name", "Random Forest"),
         "model_type": type(model).__name__,
         "number_of_features": len(feature_columns),
